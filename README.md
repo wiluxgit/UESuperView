@@ -1,4 +1,4 @@
-# UE Superinspector
+# UE Superview
 This is a fork of https://github.com/gildor2/UEViewer which adds the ability to replace textures.
 
 Currently WIP alpha, nothing works, don't try to build it.
