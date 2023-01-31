@@ -181,9 +181,6 @@ void UMorphTargetSet::PostLoad()
 	USkeletalMesh
 -----------------------------------------------------------------------------*/
 
-#define NUM_INFLUENCES_UE3			4
-#define NUM_UV_SETS_UE3				4
-
 
 #if NUM_INFLUENCES_UE3 != NUM_INFLUENCES
 #error NUM_INFLUENCES_UE3 and NUM_INFLUENCES are not matching!
@@ -354,11 +351,7 @@ struct FSkelMeshSection3
 };
 
 // This class is used now for UStaticMesh only
-struct FIndexBuffer3
-{
-	TArray<uint16>		Indices;
-
-	friend FArchive& operator<<(FArchive &Ar, FIndexBuffer3 &I)
+FArchive& operator<<(FArchive &Ar, FIndexBuffer3 &I)
 	{
 		guard(FIndexBuffer3<<);
 
@@ -369,7 +362,6 @@ struct FIndexBuffer3
 
 		unguard;
 	}
-};
 
 struct FSkelIndexBuffer3				// differs from FIndexBuffer3 since version 806 - has ability to store int indices
 {
@@ -717,12 +709,7 @@ struct FSkelMeshChunk3
 	}
 };
 
-struct FEdge3
-{
-	int					iVertex[2];
-	int					iFace[2];
-
-	friend FArchive& operator<<(FArchive &Ar, FEdge3 &V)
+FArchive& operator<<(FArchive &Ar, FEdge3 &V)
 	{
 #if BATMAN
 		if (Ar.Game == GAME_Batman && Ar.ArLicenseeVer >= 5)
@@ -738,7 +725,6 @@ struct FEdge3
 #endif // BATMAN
 		return Ar << V.iVertex[0] << V.iVertex[1] << V.iFace[0] << V.iFace[1];
 	}
-};
 
 
 // Structure holding normals and bone influences
@@ -2516,20 +2502,7 @@ struct FPS3StaticMeshData
 };
 
 
-struct FStaticMeshSection3
-{
-	UMaterialInterface	*Mat;
-	int					f10;		//?? bUseSimple...Collision
-	int					f14;		//?? ...
-	int					bEnableShadowCasting;
-	int					FirstIndex;
-	int					NumFaces;
-	int					f24;		//?? first used vertex
-	int					f28;		//?? last used vertex
-	int					Index;		//?? index of section
-	TArrayOfArray<int, 2> f30;
-
-	friend FArchive& operator<<(FArchive &Ar, FStaticMeshSection3 &S)
+FArchive& operator<<(FArchive &Ar, FStaticMeshSection3 &S)
 	{
 		guard(FStaticMeshSection3<<);
 #if TUROK
@@ -2653,16 +2626,9 @@ struct FStaticMeshSection3
 		return Ar;
 		unguard;
 	}
-};
 
 
-struct FStaticMeshVertexStream3
-{
-	int					VertexSize;		// 0xC
-	int					NumVerts;		// == Verts.Num()
-	TArray<FVector>		Verts;
-
-	friend FArchive& operator<<(FArchive &Ar, FStaticMeshVertexStream3 &S)
+FArchive& operator<<(FArchive &Ar, FStaticMeshVertexStream3 &S)
 	{
 		guard(FStaticMeshVertexStream3<<);
 
@@ -2824,21 +2790,13 @@ struct FStaticMeshVertexStream3
 
 		unguard;
 	}
-};
 
 
 static int  GNumStaticUVSets    = 1;
 static bool GUseStaticFloatUVs  = true;
 static bool GStripStaticNormals = false;
 
-struct FStaticMeshUVItem3
-{
-	FVector				Pos;			// old version (< 472)
-	FPackedNormal		Normal[3];
-	FColor				Color;
-	FMeshUVFloat		UV[NUM_UV_SETS_UE3];
-
-	friend FArchive& operator<<(FArchive &Ar, FStaticMeshUVItem3 &V)
+FArchive& operator<<(FArchive &Ar, FStaticMeshUVItem3 &V)
 	{
 		guard(FStaticMeshUVItem3<<);
 
@@ -2917,17 +2875,8 @@ struct FStaticMeshUVItem3
 
 		unguard;
 	}
-};
 
-struct FStaticMeshUVStream3
-{
-	int					NumTexCoords;
-	int					ItemSize;
-	int					NumVerts;
-	int					bUseFullPrecisionUVs;
-	TArray<FStaticMeshUVItem3> UV;
-
-	friend FArchive& operator<<(FArchive &Ar, FStaticMeshUVStream3 &S)
+FArchive& operator<<(FArchive &Ar, FStaticMeshUVStream3 &S)
 	{
 		guard(FStaticMeshUVStream3<<);
 
@@ -3032,15 +2981,8 @@ struct FStaticMeshUVStream3
 
 		unguard;
 	}
-};
 
-struct FStaticMeshShadowVolumeStream3
-{
-	int					ItemSize;
-	int					NumVerts;
-	TArray<float>		Colors;
-
-	friend FArchive& operator<<(FArchive &Ar, FStaticMeshShadowVolumeStream3 &S)
+FArchive& operator<<(FArchive &Ar, FStaticMeshShadowVolumeStream3 &S)
 	{
 		guard(FStaticMeshColorStream3<<);
 		Ar << S.ItemSize << S.NumVerts;
@@ -3049,16 +2991,9 @@ struct FStaticMeshShadowVolumeStream3
 		return Ar;
 		unguard;
 	}
-};
 
 // new color stream: difference is that data array is not serialized when NumVerts is 0
-struct FStaticMeshColorStream3		// ArVer >= 615
-{
-	int					ItemSize;
-	int					NumVerts;
-	TArray<FColor>		Colors;
-
-	friend FArchive& operator<<(FArchive &Ar, FStaticMeshColorStream3 &S)
+FArchive& operator<<(FArchive &Ar, FStaticMeshColorStream3 &S)
 	{
 		guard(FStaticMeshColorStream3<<);
 		Ar << S.ItemSize << S.NumVerts;
@@ -3084,7 +3019,6 @@ struct FStaticMeshColorStream3		// ArVer >= 615
 		return Ar;
 		unguard;
 	}
-};
 
 struct FStaticMeshVertex3Old			// ArVer < 333
 {
@@ -3148,21 +3082,7 @@ struct FStaticMeshNormalStream_MK
 
 #endif // MKVSDC
 
-struct FStaticMeshLODModel3
-{
-	FByteBulkData		BulkData;		// ElementSize = 0xFC for UT3 and 0x170 for UDK ... it's simpler to skip it
-	TArray<FStaticMeshSection3> Sections;
-	FStaticMeshVertexStream3    VertexStream;
-	FStaticMeshUVStream3        UVStream;
-	FStaticMeshShadowVolumeStream3 ShadowVolumeStream;
-	FStaticMeshColorStream3  ColorStream;
-	FIndexBuffer3		Indices;
-	FIndexBuffer3		Indices2;		// wireframe
-	int					NumVerts;
-	TArray<FEdge3>		Edges;
-	TArray<byte>		fEC;			// flags for faces? removed simultaneously with Edges
-
-	friend FArchive& operator<<(FArchive &Ar, FStaticMeshLODModel3 &Lod)
+FArchive& operator<<(FArchive &Ar, FStaticMeshLODModel3 &Lod)
 	{
 		guard(FStaticMeshLODModel3<<);
 
@@ -3522,7 +3442,6 @@ struct FStaticMeshLODModel3
 
 		unguard;
 	}
-};
 
 struct FkDOPBounds		// bounds for compressed (quantized) kDOP node
 {

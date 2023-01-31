@@ -38,6 +38,7 @@
 
 
 #include "UnrealMaterial/UnMaterial3.h"
+#include "UnrealMesh/UnMesh3.h"
 
 
 CUmodelApp GApplication;
@@ -331,9 +332,14 @@ void CUmodelApp::ShowReplaceTextureDialog()
 		appPrintf("is a mesh\n");
 		const UStaticMesh3 *mesh = static_cast<const UStaticMesh3*>(viewObj);
 		int nLods = mesh->Lods.Num();
-		appPrintf("there are %i lods\n", nLods);
+		appPrintf("  there are %i lods\n", nLods);
 		for (int i = 0; i < nLods; i++) {
-			//mesh->Lods[i];
+			int nSections = mesh->Lods[i].Sections.Num();
+			appPrintf("  there are %i sections of lod %i\n", nSections, i);
+			for (int j = 0; j < nSections; j++) {
+				UMaterialInterface* mat = mesh->Lods[i].Sections[j].Mat;
+				appPrintf("  (lod %i, sec %i): %s\n", i, j, mat->Name);
+			}
 		}
 
 	}
@@ -343,9 +349,9 @@ void CUmodelApp::ShowReplaceTextureDialog()
 		const UMaterial3 *mat = static_cast<const UMaterial3*>(viewObj);
 		CTextureData TexData;
 		if (!mat->GetTextureData(TexData)) {
-			appPrintf("WARNING: %s %s has no valid mipmaps\n", mat->GetClassName(), mat->Name);
+			appPrintf("  %s %s has no valid Mips\n", mat->GetClassName(), mat->Name);
 		} else {
-			appPrintf("With %d Mips\n", TexData.Mips.Num());
+			appPrintf("  %s has %d Mips\n", mat->GetClassName(), TexData.Mips.Num());
 		}
 	}
 
@@ -353,7 +359,7 @@ void CUmodelApp::ShowReplaceTextureDialog()
 		appPrintf("is a texture\n");
 		const UTexture2D *tex = static_cast<const UTexture2D*>(viewObj);
 		int nMips = tex->Mips.Num();
-		appPrintf("there are %i mips\n", nMips);
+		appPrintf("  there are %i mips\n", nMips);
 
 		for (int i = 0; i < nMips; i++) {
 			auto flags = tex->Mips[i].Data.BulkDataFlags;
@@ -371,7 +377,7 @@ void CUmodelApp::ShowReplaceTextureDialog()
 			int resX = tex->Mips[i].SizeX;
 			int resY = tex->Mips[i].SizeY;
 
-			appPrintf("%s, res=%i is located in %s[%08x]\n", packagename, resX, tfcName, tfcOffset);
+			appPrintf("  %s, res=%i is located in %s[%08x]\n", packagename, resX, tfcName, tfcOffset);
 		}
 	}
 	appPrintf("Nothing more to say about %s\n", name);

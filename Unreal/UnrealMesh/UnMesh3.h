@@ -17,10 +17,14 @@ UE3 CLASS TREE:
 
 #include "UnMesh.h"			// common types
 #include "UE4Version.h"
+#include "UnMeshTypes.h"
 
 // forwards
 class UMaterialInterface;
 class USkeletalMesh3;
+
+#define NUM_INFLUENCES_UE3			4
+#define NUM_UV_SETS_UE3				4
 
 
 /*-----------------------------------------------------------------------------
@@ -741,7 +745,93 @@ public:
 -----------------------------------------------------------------------------*/
 
 // forwards (structures are declared in cpp)
-struct FStaticMeshLODModel3;
+struct FStaticMeshSection3
+{
+	UMaterialInterface	*Mat;
+	int					f10;		//?? bUseSimple...Collision
+	int					f14;		//?? ...
+	int					bEnableShadowCasting;
+	int					FirstIndex;
+	int					NumFaces;
+	int					f24;		//?? first used vertex
+	int					f28;		//?? last used vertex
+	int					Index;		//?? index of section
+	TArrayOfArray<int, 2> f30;
+
+	friend FArchive& operator<<(FArchive &Ar, FStaticMeshSection3 &S);
+};
+struct FStaticMeshVertexStream3
+{
+	int					VertexSize;		// 0xC
+	int					NumVerts;		// == Verts.Num()
+	TArray<FVector>		Verts;
+
+	friend FArchive& operator<<(FArchive &Ar, FStaticMeshVertexStream3 &S);
+};
+struct FStaticMeshUVItem3
+{
+	FVector				Pos;			// old version (< 472)
+	FPackedNormal		Normal[3];
+	FColor				Color;
+	FMeshUVFloat		UV[NUM_UV_SETS_UE3];
+
+	friend FArchive& operator<<(FArchive &Ar, FStaticMeshUVItem3 &V);
+};
+struct FStaticMeshUVStream3
+{
+	int					NumTexCoords;
+	int					ItemSize;
+	int					NumVerts;
+	int					bUseFullPrecisionUVs;
+	TArray<FStaticMeshUVItem3> UV;
+
+	friend FArchive& operator<<(FArchive &Ar, FStaticMeshUVStream3 &S);
+};
+struct FStaticMeshShadowVolumeStream3
+{
+	int					ItemSize;
+	int					NumVerts;
+	TArray<float>		Colors;
+
+	friend FArchive& operator<<(FArchive &Ar, FStaticMeshShadowVolumeStream3 &S);
+};
+struct FStaticMeshColorStream3		// ArVer >= 615
+{
+	int					ItemSize;
+	int					NumVerts;
+	TArray<FColor>		Colors;
+
+	friend FArchive& operator<<(FArchive &Ar, FStaticMeshColorStream3 &S);
+};
+struct FIndexBuffer3
+{
+	TArray<uint16>		Indices;
+
+	friend FArchive& operator<<(FArchive &Ar, FIndexBuffer3 &I);
+};
+struct FEdge3
+{
+	int					iVertex[2];
+	int					iFace[2];
+
+	friend FArchive& operator<<(FArchive &Ar, FEdge3 &V);
+};
+struct FStaticMeshLODModel3
+{
+	FByteBulkData		BulkData;		// ElementSize = 0xFC for UT3 and 0x170 for UDK ... it's simpler to skip it
+	TArray<FStaticMeshSection3> Sections;
+	FStaticMeshVertexStream3    VertexStream;
+	FStaticMeshUVStream3        UVStream;
+	FStaticMeshShadowVolumeStream3 ShadowVolumeStream;
+	FStaticMeshColorStream3  ColorStream;
+	FIndexBuffer3		Indices;
+	FIndexBuffer3		Indices2;		// wireframe
+	int					NumVerts;
+	TArray<FEdge3>		Edges;
+	TArray<byte>		fEC;			// flags for faces? removed simultaneously with Edges
+
+	friend FArchive& operator<<(FArchive &Ar, FStaticMeshLODModel3 &Lod);
+};
 struct FkDOPNode3;
 struct FkDOPTriangle3;
 
