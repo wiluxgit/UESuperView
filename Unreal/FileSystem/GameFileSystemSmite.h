@@ -29,6 +29,6 @@ struct FSmiteManifest
 
 void LoadSmiteManifest(const CGameFileInfo* info);
 
-FMemReader* GetSmiteBlob(const char* name, int name_len, int level, const char* ext);
+FMemReader* GetSmiteBlob(const char* name, int name_len, int level, const char* ext, int* outTfcOffset, const char** outTfcFileName);
 
 #endif // SMITE

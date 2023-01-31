@@ -63,6 +63,7 @@ public:
 	void SetPackage(UnPackage* package);
 	void ShowErrorDialog();
 	void ShowOptionsDialog();
+	void ShowReplaceTextureDialog();
 	#if UNREAL4
 	int ShowUE4UnversionedPackageDialog(int verMin, int verMax);
 	bool ShowUE4AesKeyDialog(TArray<FString>& Values);

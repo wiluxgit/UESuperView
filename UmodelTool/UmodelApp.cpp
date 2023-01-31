@@ -37,6 +37,9 @@
 #endif
 
 
+#include "UnrealMaterial/UnMaterial3.h"
+
+
 CUmodelApp GApplication;
 
 #define SCREENSHOTS_DIR		"Screenshots"
@@ -307,6 +310,71 @@ void CUmodelApp::ShowOptionsDialog()
 {
 	UISettingsDialog dialog(GSettings);
 	dialog.Show();
+}
+
+void CUmodelApp::ShowReplaceTextureDialog()
+{
+	const UObject* viewObj = Viewer->Object;
+
+	const char* packagename = viewObj->GetPackageName();
+	const char* name = viewObj->Name;
+	const char* classname = viewObj->GetClassName();
+
+	appPrintf("Clicky Clicky ShowReplaceTextureDialog\n");
+
+	appPrintf("%s {\n  class=%s,\n  package=%s\n  types=[", name, classname, packagename);
+	for (const CTypeInfo *Type = viewObj->GetTypeinfo(); Type; Type = Type->Parent)
+		appPrintf("%s, ", Type->Name);
+	appPrintf("]\n}\n");
+
+	if(viewObj->IsA("StaticMesh3")) {
+		appPrintf("is a mesh\n");
+		const UStaticMesh3 *mesh = static_cast<const UStaticMesh3*>(viewObj);
+		int nLods = mesh->Lods.Num();
+		appPrintf("there are %i lods\n", nLods);
+		for (int i = 0; i < nLods; i++) {
+			//mesh->Lods[i];
+		}
+
+	}
+
+	if(viewObj->IsA("Material3")) {
+		appPrintf("is a material\n");
+		const UMaterial3 *mat = static_cast<const UMaterial3*>(viewObj);
+		CTextureData TexData;
+		if (!mat->GetTextureData(TexData)) {
+			appPrintf("WARNING: %s %s has no valid mipmaps\n", mat->GetClassName(), mat->Name);
+		} else {
+			appPrintf("With %d Mips\n", TexData.Mips.Num());
+		}
+	}
+
+	if(viewObj->IsA("Texture2D")) {
+		appPrintf("is a texture\n");
+		const UTexture2D *tex = static_cast<const UTexture2D*>(viewObj);
+		int nMips = tex->Mips.Num();
+		appPrintf("there are %i mips\n", nMips);
+
+		for (int i = 0; i < nMips; i++) {
+			auto flags = tex->Mips[i].Data.BulkDataFlags;
+
+			static const int compressionFlags[] = {COMPRESS_LZO, COMPRESS_OODLE, COMPRESS_ZLIB, COMPRESS_LZX};
+			int compressionMode;
+			for (int imod : compressionFlags) {
+				if (flags & imod) {
+					compressionMode = imod;
+					break;
+				}
+			}
+			int64 tfcOffset = tex->Mips[i].Data.BulkDataOffsetInFile;
+			const char* tfcName = tex->TextureFileCacheName.Str;
+			int resX = tex->Mips[i].SizeX;
+			int resY = tex->Mips[i].SizeY;
+
+			appPrintf("%s, res=%i is located in %s[%08x]\n", packagename, resX, tfcName, tfcOffset);
+		}
+	}
+	appPrintf("Nothing more to say about %s\n", name);
 }
 
 void CUmodelApp::ShowErrorDialog()
@@ -778,6 +846,13 @@ void CUmodelApp::CreateMenu()
 			+ NewMenuSeparator()
 			+ NewMenuItem("About UModel")
 			.SetCallback(BIND_STATIC(&UIAboutDialog::Show))
+		]
+		+ NewSubmenu("Editing")
+		[
+			NewMenuItem("Replace Textures")
+			.SetCallback(BIND_LAMBDA([this](){
+				ShowReplaceTextureDialog();
+			}))
 		]
 	];
 

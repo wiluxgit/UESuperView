@@ -651,6 +651,9 @@ static bool LoadBulkTextureSMITE(const UTexture2D* texture, const TArray<FTextur
 	FMemReader* MemAr = nullptr;
 	const FTexture2DMipMap &Mip = MipsArray[MipIndex];
 
+	int tfcOffset = -1;
+	const char* tfcFileNameFromPool = nullptr;
+
 	int i;
 	static char buf[2048];
 	for(i = 0; i < 4; ++i) {
@@ -687,7 +690,7 @@ static bool LoadBulkTextureSMITE(const UTexture2D* texture, const TArray<FTextur
 			s++;
 		}
 
-		MemAr = GetSmiteBlob(buf, len, MipIndex, "tfc");
+		MemAr = GetSmiteBlob(buf, len, MipIndex, "tfc", &tfcOffset, &tfcFileNameFromPool);
 		if(MemAr != NULL) {
 			break;
 		}
@@ -720,9 +723,14 @@ static bool LoadBulkTextureSMITE(const UTexture2D* texture, const TArray<FTextur
 		appPrintf("Reading %s mip level %d (%dx%d) from TFC\n", texture->Name, MipIndex, Mip.SizeX, Mip.SizeY);
 	}
 
+	if (tfcFileNameFromPool != nullptr) {
+		//appPrintf("######## PoolValue = %s at offset %08x\n", tfcFileNameFromPool, tfcOffset);
+		const_cast<UTexture2D*>(texture)->TextureFileCacheName.Str = tfcFileNameFromPool; // should be fine even when loading multiple images
+	}
+
 	Bulk->BulkDataSizeOnDisk = H.Sum.UncompressedSize;
 	Bulk->ElementCount = H.Sum.UncompressedSize;
-	Bulk->BulkDataOffsetInFile = 0;
+	Bulk->BulkDataOffsetInFile = tfcOffset; //wx
 	int backup = Bulk->BulkDataFlags;
 	Bulk->BulkDataFlags = 0; // wipe compression flags temporarily
 	Bulk->SerializeData(*Ar);

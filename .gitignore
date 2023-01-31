@@ -51,3 +51,8 @@ Tools/PackageExtract/oo2core*.dll
 
 # PackageExtract - ignore all extracted stuff
 Tools/PackageExtract/**/
+
+# useless stuff
+*.lnk
+umodel
+umodel.exe

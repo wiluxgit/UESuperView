@@ -22,7 +22,14 @@
     },
     "files.associations": {
         "*.ush": "hlsl",
-        "*.project": "perl"
+        "*.project": "perl",
+        "xstring": "cpp",
+        "algorithm": "cpp",
+        "chrono": "cpp",
+        "iterator": "cpp",
+        "xmemory": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
     },
     "files.trimTrailingWhitespace": true,
     "C_Cpp.default.includePath": [

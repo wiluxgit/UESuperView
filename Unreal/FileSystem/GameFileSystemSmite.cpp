@@ -26,7 +26,7 @@ void LoadSmiteManifest(const CGameFileInfo* info) {
 }
 
 
-FMemReader* GetSmiteBlob(const char* name, int name_len, int level, const char* ext) {
+FMemReader* GetSmiteBlob(const char* name, int name_len, int level, const char* ext, int* outTfcOffset, const char** outTfcFileName) {
     guard(GetSmiteBlob);
 
     if(GSmiteManifest == nullptr) {
@@ -55,6 +55,14 @@ FMemReader* GetSmiteBlob(const char* name, int name_len, int level, const char* 
                 appNotify("Smite: can't find tfc %s for %s", filename, name);
                 return nullptr;
             }
+
+            *outTfcOffset = entry->offset; //return the tfc file offset
+            *outTfcFileName = appStrdupPool(filename); //get the character from pool
+            //if (*outTfcFileName == nullptr) {
+		    //    appPrintf("######## LOAD SRC: %s not in strDumpPool\n", filename);
+            //} else {
+            //    appPrintf("######## LOAD SRC: %s[%p] found in strDumpPool as %s[%p] with offset = %x\n", filename, filename, *outTfcFileName, *outTfcFileName, entry->offset);
+            //}
 
             FArchive* Ar = info->CreateReader();
             Ar->Game = GAME_Smite;
